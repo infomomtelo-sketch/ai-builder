@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+
+# Build output
+/dist
+/build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage
+coverage/
+
+# Environment variables
+dotenv
+.env
