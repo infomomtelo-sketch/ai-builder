@@ -3,9 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Builder</title>
+<title>AI Builder — Build anything. Own everything.</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<!-- we build here next -->
+<body class="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center p-8">
+
+<div class="max-w-xl w-full text-center">
+  <h1 class="text-4xl font-bold mb-4">Build anything.</h1>
+  <p class="text-gray-400 text-lg mb-8">Describe your idea. AI builds it. You own the code forever — no subscriptions, no hostages.</p>
+  
+  <textarea id="prompt" placeholder="e.g. A landing page for a dog walking service..."
+    class="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white text-sm resize-none h-28 focus:outline-none focus:border-gray-500 mb-4"></textarea>
+  
+  <button onclick="build()" id="btn"
+    class="w-full bg-white text-gray-950 font-medium py-3 rounded-xl hover:bg-gray-100 transition">
+    Build it →
+  </button>
+
+  <p class="text-gray-600 text-xs mt-6">Your code. Your ownership. Always.</p>
+</div>
+
+<script>
+async function build() {
+  const prompt = document.getElementById('prompt').value.trim();
+  if(!prompt) return;
+  const btn = document.getElementById('btn');
+  btn.textContent = 'Building...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: `You are an expert web developer. Respond with ONLY a complete self-contained HTML file. No explanations. No markdown. Just raw HTML starting with <!DOCTYPE html>.`,
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+    const data = await res.json();
+    const html = data.content?.[0]?.text || '';
+    if(html) {
+      const blob = new Blob([html], {type: 'text/html'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'my-build.html';
+      a.click();
+      btn.textContent = 'Done! Check your downloads.';
+    }
+  } catch(e) {
+    btn.textContent = 'Something went wrong. Try again.';
+    btn.disabled = false;
+  }
+}
+</script>
 </body>
 </html>
