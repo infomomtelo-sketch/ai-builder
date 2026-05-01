@@ -4,32 +4,276 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Builder — Build anything. Own everything.</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    transition: all 0.5s ease;
+    overflow: hidden;
+    position: relative;
+  }
+
+  body.dark { background: #0a0a1a; color: white; }
+  body.light { background: #e8f4fd; color: #1a1a2e; }
+
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+  }
+
+  .content {
+    position: relative;
+    z-index: 2;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  .sub {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    opacity: 0.8;
+    line-height: 1.6;
+  }
+
+  textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 16px;
+    padding: 1rem;
+    color: inherit;
+    font-size: 0.9rem;
+    resize: none;
+    height: 110px;
+    margin-bottom: 1rem;
+    outline: none;
+    transition: border 0.3s;
+  }
+
+  body.light textarea {
+    background: rgba(255,255,255,0.5);
+    border-color: rgba(0,100,200,0.2);
+    color: #1a1a2e;
+  }
+
+  textarea::placeholder { opacity: 0.6; }
+  textarea:focus { border-color: rgba(255,255,255,0.5); }
+
+  button#btn {
+    width: 100%;
+    padding: 0.85rem;
+    border-radius: 16px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    backdrop-filter: blur(12px);
+  }
+
+  body.dark button#btn {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+  }
+
+  body.light button#btn {
+    background: rgba(10,60,120,0.8);
+    color: white;
+  }
+
+  button#btn:hover { transform: translateY(-2px); opacity: 0.9; }
+  button#btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .footer {
+    margin-top: 1.5rem;
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+
+  .toggle {
+    position: fixed;
+    top: 1.2rem;
+    right: 1.2rem;
+    z-index: 10;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 99px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: inherit;
+    transition: all 0.3s;
+  }
+
+  body.light .toggle {
+    background: rgba(0,0,0,0.1);
+    border-color: rgba(0,0,0,0.15);
+    color: #1a1a2e;
+  }
+</style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center p-8">
+<body class="dark">
 
-<div class="max-w-xl w-full text-center">
-  <h1 class="text-4xl font-bold mb-4">Build anything.</h1>
-  <p class="text-gray-400 text-lg mb-8">Describe your idea. AI builds it. You own the code forever — no subscriptions, no hostages.</p>
-  
-  <textarea id="prompt" placeholder="e.g. A landing page for a dog walking service..."
-    class="w-full bg-gray-900 border border-gray-700 rounded-xl p-4 text-white text-sm resize-none h-28 focus:outline-none focus:border-gray-500 mb-4"></textarea>
-  
-  <button onclick="build()" id="btn"
-    class="w-full bg-white text-gray-950 font-medium py-3 rounded-xl hover:bg-gray-100 transition">
-    Build it →
-  </button>
+<canvas id="ocean"></canvas>
 
-  <p class="text-gray-600 text-xs mt-6">Your code. Your ownership. Always.</p>
+<button class="toggle" onclick="toggleMode()" id="modeBtn">☀ Light</button>
+
+<div class="content">
+  <h1>Build anything.</h1>
+  <p class="sub">Describe your idea. AI builds it.<br>You own the code forever — no subscriptions, no hostages.</p>
+
+  <textarea id="prompt" placeholder="e.g. A landing page for a coffee shop..."></textarea>
+
+  <button onclick="build()" id="btn">Build it →</button>
+
+  <p class="footer">Your code. Your ownership. Always.</p>
 </div>
 
 <script>
+const canvas = document.getElementById('ocean');
+const ctx = canvas.getContext('2d');
+let W, H, t = 0, isDark = true;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function drawScene() {
+  ctx.clearRect(0, 0, W, H);
+  t += 0.008;
+
+  if(isDark) {
+    const sky = ctx.createLinearGradient(0, 0, 0, H * 0.6);
+    sky.addColorStop(0, '#050510');
+    sky.addColorStop(1, '#0a1a3a');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H * 0.6);
+
+    for(let i = 0; i < 80; i++) {
+      const x = (Math.sin(i * 432.234) * 0.5 + 0.5) * W;
+      const y = (Math.sin(i * 876.543) * 0.5 + 0.5) * H * 0.55;
+      const r = Math.sin(i * 234.1 + t) * 0.5 + 0.8;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${0.4 + Math.sin(i + t * 2) * 0.3})`;
+      ctx.fill();
+    }
+
+    const moon = ctx.createRadialGradient(W*0.8, H*0.12, 0, W*0.8, H*0.12, 40);
+    moon.addColorStop(0, 'rgba(255,255,220,0.9)');
+    moon.addColorStop(1, 'rgba(255,255,220,0)');
+    ctx.fillStyle = moon;
+    ctx.fillRect(0, 0, W, H);
+
+  } else {
+    const sky = ctx.createLinearGradient(0, 0, 0, H * 0.6);
+    sky.addColorStop(0, '#87CEEB');
+    sky.addColorStop(1, '#c9e8f8');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H * 0.6);
+
+    const sun = ctx.createRadialGradient(W*0.75, H*0.1, 0, W*0.75, H*0.1, 60);
+    sun.addColorStop(0, 'rgba(255,240,100,0.95)');
+    sun.addColorStop(1, 'rgba(255,200,50,0)');
+    ctx.fillStyle = sun;
+    ctx.fillRect(0, 0, W, H);
+
+    for(let i = 0; i < 5; i++) {
+      const cx = (W * 0.1) + i * W * 0.2 + Math.sin(t * 0.3 + i) * 20;
+      const cy = H * 0.1 + Math.sin(i * 1.3) * H * 0.08;
+      drawCloud(cx, cy);
+    }
+  }
+
+  const waveBase = H * 0.58;
+  const layers = isDark
+    ? [
+        { color: 'rgba(10,30,80,0.9)', offset: 0, amp: 18, freq: 0.012, speed: 1 },
+        { color: 'rgba(8,20,60,0.95)', offset: 28, amp: 14, freq: 0.018, speed: -0.7 },
+        { color: 'rgba(5,12,40,1)', offset: 52, amp: 10, freq: 0.025, speed: 0.5 },
+      ]
+    : [
+        { color: 'rgba(30,100,200,0.6)', offset: 0, amp: 18, freq: 0.012, speed: 1 },
+        { color: 'rgba(20,80,180,0.75)', offset: 28, amp: 14, freq: 0.018, speed: -0.7 },
+        { color: 'rgba(10,60,160,0.9)', offset: 52, amp: 10, freq: 0.025, speed: 0.5 },
+      ];
+
+  layers.forEach(layer => {
+    ctx.beginPath();
+    const y0 = waveBase + layer.offset;
+    ctx.moveTo(0, y0);
+    for(let x = 0; x <= W; x += 4) {
+      const y = y0 + Math.sin(x * layer.freq + t * layer.speed) * layer.amp
+                   + Math.sin(x * layer.freq * 1.7 + t * layer.speed * 1.3) * (layer.amp * 0.4);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H);
+    ctx.lineTo(0, H);
+    ctx.closePath();
+    ctx.fillStyle = layer.color;
+    ctx.fill();
+  });
+
+  requestAnimationFrame(drawScene);
+}
+
+function drawCloud(cx, cy) {
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  [[0,0,28],[25,-8,22],[-25,-8,20],[50,0,18],[-48,0,16],[0,-18,18]].forEach(([dx,dy,r])=>{
+    ctx.beginPath();
+    ctx.arc(cx+dx, cy+dy, r, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+drawScene();
+
+function toggleMode() {
+  isDark = !isDark;
+  document.body.classList.toggle('dark', isDark);
+  document.body.classList.toggle('light', !isDark);
+  document.getElementById('modeBtn').textContent = isDark ? '☀ Light' : '☾ Dark';
+}
+
 async function build() {
   const prompt = document.getElementById('prompt').value.trim();
   if(!prompt) return;
   const btn = document.getElementById('btn');
-  btn.textContent = 'Building...';
   btn.disabled = true;
+
+  const messages = [
+    'Thinking deeply...','Designing your idea...','Writing the code...',
+    'Adding the details...','Almost there...','Putting it all together...'
+  ];
+  let i = 0;
+  btn.textContent = messages[0];
+  const interval = setInterval(() => {
+    i = (i + 1) % messages.length;
+    btn.textContent = messages[i];
+  }, 2000);
 
   try {
     const res = await fetch('https://ai-builder-api.infomomtelo.workers.dev', {
@@ -43,6 +287,7 @@ async function build() {
       })
     });
     const data = await res.json();
+    clearInterval(interval);
     const html = data.content?.[0]?.text || '';
     if(html) {
       const blob = new Blob([html], {type: 'text/html'});
@@ -51,12 +296,20 @@ async function build() {
       a.download = 'my-build.html';
       a.click();
       btn.textContent = 'Done! Check your downloads.';
+    } else {
+      btn.textContent = 'Something went wrong. Try again.';
+      btn.disabled = false;
     }
   } catch(e) {
+    clearInterval(interval);
     btn.textContent = 'Something went wrong. Try again.';
     btn.disabled = false;
   }
 }
+
+document.getElementById('prompt').addEventListener('keydown', e => {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); build(); }
+});
 </script>
 </body>
 </html>
