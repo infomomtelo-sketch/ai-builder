@@ -1,16 +1,4 @@
 {
   "name": "ai-builder",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "dev": "concurrently \"npm run dev --workspace packages/backend\" \"npm run dev --workspace packages/frontend\"",
-    "build": "lerna run build",
-    "test": "lerna run test"
-  },
-  "devDependencies": {
-    "concurrently": "^6.2.0",
-    "lerna": "^4.0.0"
-  }
+  "version": "1.0.0"
 }
