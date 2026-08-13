@@ -101,7 +101,7 @@ else
     fi
   }
 
-  check_var "APP_URL"               "127.0.0.1"
+  check_var "APP_URL"               "your-app-url"
   check_var "GITHUB_CLIENT_ID"      "your-github-client-id"
   check_var "GITHUB_CLIENT_SECRET"  "your-github-client-secret"
   check_var "JWT_SECRET"            "replace-with"
@@ -113,7 +113,7 @@ fi
 # --------------------------------------------------------------------------
 echo -e "\n${BOLD}Checking Wrangler authentication...${RESET}"
 
-if wrangler whoami &>/dev/null 2>&1; then
+if wrangler whoami &>/dev/null; then
   WRANGLER_USER=$(wrangler whoami 2>&1 | grep -oP '(?<=You are logged in with an )\S+' || true)
   ok "Wrangler is authenticated${WRANGLER_USER:+ as $WRANGLER_USER}"
 else
