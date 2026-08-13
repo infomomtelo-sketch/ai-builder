@@ -66,3 +66,21 @@ AI Builder is a production-focused serverless AI workspace built for Cloudflare 
 ## Deployment
 
 Push to `main` to trigger `/.github/workflows/deploy.yml`. The workflow builds the Vite app, applies D1 migrations, and deploys the Worker with bundled static assets.
+
+For a complete, step-by-step production deployment guide see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
+An automated setup helper is also available:
+
+```bash
+chmod +x scripts/setup-deployment.sh
+./scripts/setup-deployment.sh
+```
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Step-by-step Cloudflare deployment guide |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Local development setup and PR guidelines |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System components, data flow, and API reference |
+| [.github/DEPLOYMENT_SECRETS.md](.github/DEPLOYMENT_SECRETS.md) | Required secrets and environment variables |
