@@ -1,17 +1,18 @@
 {
   "name": "ai-builder",
   "version": "1.0.0",
-  "description": "AI Builder is an innovative platform designed to simplify the development and deployment of artificial intelligence applications. Leveraging the latest technologies, AI Builder allows users to create advanced AI models with ease.",
-  "main": "index.js",
+  "description": "Serverless AI builder platform for GitHub-authenticated multi-model workflows on Cloudflare.",
+  "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "wrangler dev --config wrangler.toml",
+    "dev:web": "vite --config packages/web/vite.config.mts",
+    "build": "npm run build:web",
+    "build:web": "vite build --config packages/web/vite.config.mts",
+    "typecheck:worker": "tsc --noEmit -p packages/worker/tsconfig.json",
+    "typecheck:web": "tsc --noEmit -p packages/web/tsconfig.json",
+    "deploy": "npm run build:web && wrangler deploy --config wrangler.toml",
+    "db:migrate": "wrangler d1 migrations apply ai-builder --local --config wrangler.toml",
+    "test": "npm run typecheck:worker && npm run typecheck:web && npm run build:web"
   },
   "repository": {
     "type": "git",
@@ -21,25 +22,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.116.0",
-    "@prisma/client": "^7.9.1",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "autoprefixer": "^10.5.4",
-    "axios": "^1.19.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "lucide-react": "^1.31.0",
-    "next": "^14.2.35",
-    "next-auth": "^4.24.15",
-    "openai": "^7.4.0",
-    "prisma": "^7.9.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.5",
+    "vite": "^8.2.1",
+    "wrangler": "^4.122.0"
   }
 }
