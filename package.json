@@ -1,38 +1,13 @@
 {
   "name": "ai-builder",
   "version": "1.0.0",
-  "description": "Serverless AI builder platform for GitHub-authenticated multi-model workflows on Cloudflare.",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "wrangler dev --config wrangler.toml",
-    "dev:web": "vite --config packages/web/vite.config.mts",
-    "build": "npm run build:web",
-    "build:web": "vite build --config packages/web/vite.config.mts",
-    "typecheck:worker": "tsc --noEmit -p packages/worker/tsconfig.json",
-    "typecheck:web": "tsc --noEmit -p packages/web/tsconfig.json",
-    "deploy": "npm run build:web && wrangler deploy --config wrangler.toml",
-    "db:migrate": "wrangler d1 migrations apply ai-builder --local --config wrangler.toml",
-    "test": "npm run typecheck:worker && npm run typecheck:web && npm run build:web"
-  },
-  "repository": {
-    "type": "git",
-    "url": "http://localhost:26831/infomomtelo-sketch/ai-builder"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@types/node": "^26.2.0",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "typescript": "^7.0.2",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^6.0.5",
-    "vite": "^8.2.1",
-    "wrangler": "^4.122.0"
+    "dev": "npm run dev --workspace=packages/worker",
+    "deploy": "npm run deploy --workspace=packages/worker",
+    "type-check": "npm run type-check --workspace=packages/worker"
   }
 }

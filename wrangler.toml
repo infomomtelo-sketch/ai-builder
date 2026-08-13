@@ -1,81 +1,31 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# wrangler.toml — Cloudflare Workers configuration for AI Builder
-#
-# Quick-start:
-#   1. Replace REPLACE_WITH_D1_DATABASE_ID with the output of:
-#        wrangler d1 create ai-builder
-#   2. Replace REPLACE_WITH_KV_NAMESPACE_ID with the output of:
-#        wrangler kv namespace create ai-builder-sessions
-#   3. Set all required Worker secrets:
-#        wrangler secret put APP_URL
-#        wrangler secret put GITHUB_CLIENT_ID
-#        wrangler secret put GITHUB_CLIENT_SECRET
-#        wrangler secret put JWT_SECRET
-#        wrangler secret put SETTINGS_ENCRYPTION_SECRET
-#   See DEPLOYMENT.md for the complete guide.
-# ─────────────────────────────────────────────────────────────────────────────
-
-# Worker name — also used as the Workers subdomain:
-#   https://<name>.<account>.workers.dev
 name = "ai-builder"
-
-# Entry point for the Cloudflare Worker (TypeScript is bundled by Wrangler).
 main = "packages/worker/src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 
-# Minimum Cloudflare compatibility date. Pin this to keep behaviour stable.
-# Bump only after reviewing Cloudflare's compatibility flag changelog.
-compatibility_date = "2026-08-13"
-
-# ─── Static Assets ────────────────────────────────────────────────────────────
-# Serves the bundled React SPA from packages/web/dist/.
-# Build the frontend first with: npm run build:web
-# In production, assets are served from Cloudflare's edge cache.
-# not_found_handling = "single-page-application" ensures all unknown paths
-# return index.html so client-side routing works correctly.
-[assets]
-directory = "./packages/web/dist"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
-
-# ─── Plain (non-secret) Variables ─────────────────────────────────────────────
-# APP_URL here is the local development default only.
-# In production, override this with: wrangler secret put APP_URL
-# All other sensitive values (OAuth keys, JWT secrets) must be set as
-# Worker Secrets — never store them in this file.
-[vars]
-APP_URL = "http://127.0.0.1:8787"
-
-# ─── D1 Database (SQLite) ─────────────────────────────────────────────────────
-# Stores users, projects, workflows, prompts, conversations, and messages.
-# Schema: migrations/0001_init.sql
-#
-# Create the database:
-#   wrangler d1 create ai-builder
-#
-# Apply migrations locally:
-#   npm run db:migrate
-#
-# Apply migrations to production:
-#   wrangler d1 migrations apply ai-builder --remote
-#
-# The `binding` value ("DB") is the name used in Worker code:
-#   env.DB.prepare("SELECT ...").all()
 [[d1_databases]]
 binding = "DB"
-database_name = "ai-builder"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_name = "ai-builder-db"
+database_id = "your-d1-database-id"       # Replace after running: wrangler d1 create ai-builder-db
 migrations_dir = "migrations"
 
-# ─── KV Namespace (Key–Value Store) ───────────────────────────────────────────
-# Stores short-lived data:
-#   oauth:{state}     CSRF tokens during OAuth login (10-minute TTL)
-#   session:{id}      JWT session payloads          (24-hour TTL)
-#
-# Create the namespace:
-#   wrangler kv namespace create ai-builder-sessions
-#
-# The `binding` value ("SESSIONS") is the name used in Worker code:
-#   await env.SESSIONS.put(key, value, { expirationTtl: 900 })
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "your-kv-namespace-id"               # Replace after running: wrangler kv:namespace create SESSIONS
+preview_id = "your-kv-preview-id"         # Replace after running: wrangler kv:namespace create SESSIONS --preview
+
+[vars]
+ENVIRONMENT = "production"
+APP_URL = "https://ai-builder.your-workers-subdomain.workers.dev"  # Update with your Workers URL
+
+# Secrets (set via `wrangler secret put <NAME>`):
+#   GITHUB_CLIENT_ID
+#   GITHUB_CLIENT_SECRET
+#   JWT_SECRET
+
+[dev]
+port = 8787
+
+[[rules]]
+type = "ESModule"
+globs = ["**/*.ts"]
