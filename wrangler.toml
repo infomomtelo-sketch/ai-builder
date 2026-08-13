@@ -1,0 +1,31 @@
+name = "ai-builder"
+main = "packages/worker/src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ai-builder-db"
+database_id = "your-d1-database-id"       # Replace after running: wrangler d1 create ai-builder-db
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "your-kv-namespace-id"               # Replace after running: wrangler kv:namespace create SESSIONS
+preview_id = "your-kv-preview-id"         # Replace after running: wrangler kv:namespace create SESSIONS --preview
+
+[vars]
+ENVIRONMENT = "production"
+APP_URL = "https://ai-builder.your-workers-subdomain.workers.dev"  # Update with your Workers URL
+
+# Secrets (set via `wrangler secret put <NAME>`):
+#   GITHUB_CLIENT_ID
+#   GITHUB_CLIENT_SECRET
+#   JWT_SECRET
+
+[dev]
+port = 8787
+
+[[rules]]
+type = "ESModule"
+globs = ["**/*.ts"]
