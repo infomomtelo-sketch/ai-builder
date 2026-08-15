@@ -27,6 +27,16 @@ jobs:
         working-directory: packages/worker
         run: npm ci
 
+      - name: Configure wrangler.toml with secrets
+        env:
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
+          KV_NAMESPACE_ID: ${{ secrets.KV_NAMESPACE_ID }}
+          KV_PREVIEW_ID: ${{ secrets.KV_PREVIEW_ID }}
+        run: |
+          sed -i "s/your-d1-database-id/${D1_DATABASE_ID}/g" wrangler.toml
+          sed -i "s/your-kv-namespace-id/${KV_NAMESPACE_ID}/g" wrangler.toml
+          sed -i "s/your-kv-preview-id/${KV_PREVIEW_ID}/g" wrangler.toml
+
       - name: Run D1 migrations
         working-directory: packages/worker
         env:

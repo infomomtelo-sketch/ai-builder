@@ -6,13 +6,13 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "ai-builder-db"
-database_id = "your-d1-database-id"       # Replace after running: wrangler d1 create ai-builder-db
+database_id = "your-d1-database-id"       # Set D1_DATABASE_ID secret in GitHub Actions; replaced at deploy time
 migrations_dir = "migrations"
 
 [[kv_namespaces]]
 binding = "SESSIONS"
-id = "your-kv-namespace-id"               # Replace after running: wrangler kv:namespace create SESSIONS
-preview_id = "your-kv-preview-id"         # Replace after running: wrangler kv:namespace create SESSIONS --preview
+id = "your-kv-namespace-id"               # Set KV_NAMESPACE_ID secret in GitHub Actions; replaced at deploy time
+preview_id = "your-kv-preview-id"         # Set KV_PREVIEW_ID secret in GitHub Actions; replaced at deploy time
 
 [vars]
 ENVIRONMENT = "production"
