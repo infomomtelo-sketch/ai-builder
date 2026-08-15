@@ -29,10 +29,14 @@ jobs:
 
       - name: Configure wrangler.toml with secrets
         env:
-          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
-          KV_NAMESPACE_ID: ${{ secrets.KV_NAMESPACE_ID }}
-          KV_PREVIEW_ID: ${{ secrets.KV_PREVIEW_ID }}
+          D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID || vars.D1_DATABASE_ID }}
+          KV_NAMESPACE_ID: ${{ secrets.KV_NAMESPACE_ID || vars.KV_NAMESPACE_ID }}
+          KV_PREVIEW_ID: ${{ secrets.KV_PREVIEW_ID || vars.KV_PREVIEW_ID }}
         run: |
+          if [ -z "${D1_DATABASE_ID}" ] || [ -z "${KV_NAMESPACE_ID}" ] || [ -z "${KV_PREVIEW_ID}" ]; then
+            echo "Missing required Cloudflare IDs. Set D1_DATABASE_ID, KV_NAMESPACE_ID, and KV_PREVIEW_ID as repository secrets or variables."
+            exit 1
+          fi
           sed -i "s/your-d1-database-id/${D1_DATABASE_ID}/g" wrangler.toml
           sed -i "s/your-kv-namespace-id/${KV_NAMESPACE_ID}/g" wrangler.toml
           sed -i "s/your-kv-preview-id/${KV_PREVIEW_ID}/g" wrangler.toml

@@ -162,6 +162,9 @@ This builds the Vite frontend, then calls `wrangler deploy`.
    |---|---|
    | `CLOUDFLARE_API_TOKEN` | Create at Cloudflare → My Profile → API Tokens with *Edit Workers* permission |
    | `CLOUDFLARE_ACCOUNT_ID` | From your Cloudflare dashboard URL |
+   | `D1_DATABASE_ID` | D1 database ID from Step 1b |
+   | `KV_NAMESPACE_ID` | KV namespace ID from Step 1c |
+   | `KV_PREVIEW_ID` | KV preview namespace ID from `wrangler kv namespace create ai-builder-sessions --preview` |
 
 2. Push to the `main` branch:
 

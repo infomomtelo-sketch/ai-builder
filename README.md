@@ -85,6 +85,9 @@ In your repository → **Settings → Secrets → Actions**, add:
 |--------------------------|------------------------------------------|
 | `CLOUDFLARE_API_TOKEN`   | API token with Workers & D1 permissions  |
 | `CLOUDFLARE_ACCOUNT_ID`  | Your Cloudflare account ID               |
+| `D1_DATABASE_ID`         | D1 database ID used in `wrangler.toml`   |
+| `KV_NAMESPACE_ID`        | KV namespace ID for `SESSIONS`           |
+| `KV_PREVIEW_ID`          | KV preview namespace ID for `SESSIONS`   |
 
 ### Deploy
 
