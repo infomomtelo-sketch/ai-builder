@@ -1,0 +1,55 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Preflight Actions metadata for Copilot runtime
+        env:
+          GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_JOB_NAME: ${{ github.job }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          endpoint="${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100"
+          response_file="${RUNNER_TEMP}/copilot-job-metadata.json"
+
+          echo "Validating Actions job metadata availability for run ${GITHUB_RUN_ID} (${GITHUB_JOB_NAME})"
+
+          for attempt in 1 2 3; do
+            http_status="$(
+              curl -sS -L \
+                -H "Accept: application/vnd.github+json" \
+                -o "${response_file}" \
+                -w "%{http_code}" \
+                "${endpoint}" || true
+            )"
+
+            if [[ "${http_status}" == "200" ]]; then
+              if grep -q "\"name\":\"${GITHUB_JOB_NAME}\"" "${response_file}"; then
+                echo "Actions metadata preflight succeeded."
+              else
+                echo "::warning::Actions metadata endpoint is reachable, but did not return job '${GITHUB_JOB_NAME}' yet."
+              fi
+              exit 0
+            fi
+
+            echo "::warning::Attempt ${attempt}/3 to fetch Actions job metadata returned HTTP ${http_status}."
+            sleep $((attempt * 2))
+          done
+
+          echo "::warning::Unable to fetch Actions job metadata after retries. If Copilot later fails with 'Failed to fetch job details', rerun the workflow. If it persists, collect run ${GITHUB_RUN_ID} logs and open a GitHub support ticket."
