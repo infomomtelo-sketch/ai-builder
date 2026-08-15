@@ -18,9 +18,9 @@ jobs:
     steps:
       - name: Preflight Actions metadata for Copilot runtime
         env:
+          GH_TOKEN: ${{ github.token }}
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_JOB_NAME: ${{ github.job }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
@@ -34,22 +34,38 @@ jobs:
             http_status="$(
               curl -sS -L \
                 -H "Accept: application/vnd.github+json" \
+                --oauth2-bearer "${GH_TOKEN}" \
                 -o "${response_file}" \
                 -w "%{http_code}" \
                 "${endpoint}" || true
             )"
 
             if [[ "${http_status}" == "200" ]]; then
-              if grep -q "\"name\":\"${GITHUB_JOB_NAME}\"" "${response_file}"; then
+              if python - "${response_file}" "${GITHUB_JOB_NAME}" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as handle:
+    payload = json.load(handle)
+
+job_name = sys.argv[2]
+jobs = payload.get("jobs", [])
+sys.exit(0 if any(job.get("name") == job_name for job in jobs) else 1)
+PY
+              then
                 echo "Actions metadata preflight succeeded."
+                exit 0
               else
-                echo "::warning::Actions metadata endpoint is reachable, but did not return job '${GITHUB_JOB_NAME}' yet."
+                echo "::warning::Actions metadata endpoint is reachable, but did not return job '${GITHUB_JOB_NAME}' yet (attempt ${attempt}/3)."
               fi
-              exit 0
+            else
+              echo "::warning::Attempt ${attempt}/3 to fetch Actions job metadata returned HTTP ${http_status}."
             fi
 
-            echo "::warning::Attempt ${attempt}/3 to fetch Actions job metadata returned HTTP ${http_status}."
-            sleep $((attempt * 2))
+            if [[ "${attempt}" -lt 3 ]]; then
+              sleep $((attempt * 2))
+            fi
           done
 
-          echo "::warning::Unable to fetch Actions job metadata after retries. If Copilot later fails with 'Failed to fetch job details', rerun the workflow. If it persists, collect run ${GITHUB_RUN_ID} logs and open a GitHub support ticket."
+          echo "::warning::Unable to fetch Actions job metadata after retries. This preflight is advisory and does not fail the workflow. If Copilot later fails with 'Failed to fetch job details', rerun the workflow. If it persists, collect run ${GITHUB_RUN_ID} logs and open a GitHub support ticket."
+          exit 0
