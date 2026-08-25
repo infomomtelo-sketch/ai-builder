@@ -17,6 +17,16 @@ These are used only by the GitHub Actions deployment workflow and are never pass
 
 ---
 
+## Copilot Cloud Agent Workflow Prerequisites
+
+The Copilot cloud agent workflow (`dynamic/copilot-swe-agent/copilot`) runs on GitHub Actions and must be able to read run/job metadata.
+
+- In **Settings → Actions → General**, ensure workflow permissions are not overly restrictive for Copilot cloud-agent runs (for most repos, **Read and write permissions** is the reliable setting).
+- Keep `.github/workflows/copilot-setup-steps.yml` on the default branch so Copilot runs metadata preflight checks before processing requests.
+- If a run fails with `Failed to fetch job details: HTTP 500 Internal Server Error`, re-run once first (transient backend errors can occur).
+
+---
+
 ## Cloudflare Worker Secrets
 
 Set these with `wrangler secret put <NAME>` **or** in the Cloudflare dashboard under your Worker → Settings → Variables → Secret Variables.

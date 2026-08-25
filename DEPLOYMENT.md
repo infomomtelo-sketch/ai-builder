@@ -222,6 +222,12 @@ Safe to ignore — the migrations use `CREATE TABLE IF NOT EXISTS`. Re-run with 
 - Check that both `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets are set.
 - Ensure the API token has at least **Cloudflare Workers:Edit** and **D1:Edit** permissions.
 
+### Copilot cloud agent fails with `Failed to fetch job details`
+- Confirm **Settings → Actions → General → Workflow permissions** is not overly restrictive for Copilot cloud-agent runs.
+- Keep `.github/workflows/copilot-setup-steps.yml` on the default branch so Copilot runs the metadata preflight before starting.
+- Re-run the failed Copilot job once. A single `HTTP 500` from `PlatformClient.fetchJobDetails` is usually transient.
+- If repeated, collect the run URL and job URL and open a GitHub support ticket (the failure happens in Copilot runtime before repository code executes).
+
 ### Worker returns `Internal Server Error`
 Check real-time logs:
 ```bash
